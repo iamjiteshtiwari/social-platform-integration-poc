@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f4f6fb">
+  <title>Apps Script Integration POC</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="page-header">
+      <p class="eyebrow">NON-PRODUCTION TEST</p>
+      <h1>Frontend ↔ Apps Script</h1>
+      <p class="intro">A small, harmless connectivity test for GitHub Pages and Google Apps Script. No sign-in, personal data, sheets, or social accounts are involved.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="setup-title">
+      <h2 id="setup-title">1. Configure test endpoint</h2>
+      <label for="endpoint">Apps Script Web App URL ending in <code>/exec</code></label>
+      <input id="endpoint" name="endpoint" type="url" inputmode="url" autocomplete="url"
+        placeholder="https://script.google.com/macros/s/.../exec" spellcheck="false">
+      <p class="hint">The URL is saved only in this browser's local storage. Do not put it in source code or commit it to GitHub.</p>
+      <div class="actions">
+        <button id="save-endpoint" class="button secondary" type="button">Save URL in this browser</button>
+        <button id="clear-endpoint" class="button quiet" type="button">Clear</button>
+      </div>
+      <p id="config-status" class="status" role="status" aria-live="polite">Endpoint not configured.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="ping-title">
+      <h2 id="ping-title">2. Test GET request</h2>
+      <p>Requests a simple ping response. This does not read or write any stored data.</p>
+      <button id="ping-button" class="button primary" type="button">Run GET ping</button>
+    </section>
+
+    <section class="panel" aria-labelledby="post-title">
+      <h2 id="post-title">3. Test POST request</h2>
+      <p>Sends a fixed, harmless test message and asks the endpoint to echo it back.</p>
+      <button id="post-button" class="button primary" type="button">Run POST echo</button>
+    </section>
+
+    <section class="panel result-panel" aria-labelledby="result-title">
+      <div class="result-heading">
+        <h2 id="result-title">Test result</h2>
+        <span id="result-badge" class="badge idle">Not run</span>
+      </div>
+      <p id="result-summary" role="status" aria-live="polite">Choose a test above after setting the endpoint.</p>
+      <pre id="result-output" tabindex="0">Responses will appear here.</pre>
+      <p class="hint">A browser CORS or redirect error is a useful test result; it does not necessarily mean the Apps Script endpoint is unreachable.</p>
+    </section>
+
+    <footer>
+      <p>Isolated technical proof of concept only. Do not use this page for authentication, private data, or production operations.</p>
+    </footer>
+  </main>
+</body>
+</html>
