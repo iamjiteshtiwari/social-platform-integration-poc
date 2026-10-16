@@ -1,31 +1,31 @@
 # Social Platform Integration POC
 
-A non-production proof of concept for testing GitHub Pages frontend integration with Google Apps Script. It uses custom HTML, CSS and JavaScript to test HTTP requests, JSON responses and browser cross-origin behavior before developing a secure multi-user social media management platform.
+A non-production proof of concept for GitHub Pages + Google Apps Script transport and cookie-free session mechanics. Custom HTML, CSS, and JavaScript only.
 
 ## GitHub Pages setup
 
-The frontend files are in the repository root:
-- `index.html`
-- `styles.css`
-- `app.js`
+Frontend files are in the repository root: `index.html`, `styles.css`, and `app.js`.
 
-In **Settings → Pages**, choose **Deploy from a branch**, branch `JTCodes`, folder `/(root)`, then save.
+To test this S4.18 work without changing the currently published POC, review branch `s4-18-cookie-free-session-poc`. The published `JTCodes` branch is not changed by this microtask.
 
-## Apps Script test backend
+## Apps Script backend
 
-The harmless test backend source is in the previously prepared package `apps-script/Code.gs` inside `social-platform-integration-poc.zip`. Create a new, separate Apps Script project, paste that code, save, and deploy it as a Web App using only the test access setting Google makes available. Do not use the existing portfolio contact-form project or its deployment.
+Copy `apps-script/Code.gs` into the separate Apps Script POC project, save, then deploy a **new test version** of that isolated web app. Do not use the portfolio contact-form script or production resources. Enter its `/exec` URL into the POC page.
 
-Enter the new test deployment's `/exec` URL in the published POC page. The page can run:
-- GET `?action=ping&source=github-pages-poc`
-- URL-encoded POST with `action=echo` and a harmless test message
+Actions:
+- GET `action=ping`: harmless connectivity check.
+- POST `action=echo`: harmless echo.
+- POST `action=session_create`: creates a server-side 9-hour demo session.
+- POST `action=session_validate`: validates the token against server-side session state and fixed expiry.
+- POST `action=session_revoke`: revokes the demo session.
+- POST `action=session_expire_test`: **test-only** action to move expiry into the past so rejection can be tested without waiting nine hours.
 
-The endpoint URL is saved only in the current browser's local storage. It is not committed to this repository.
+## Critical scope and limitations
 
-## Safety and limitations
-
-- This is a non-production integration test only.
-- It does not store data or connect to Google Sheets, Google Drive, or social accounts.
-- Do not enter credentials, private data, social tokens, or production endpoints.
-- A browser CORS/redirect error is a valid diagnostic result and does not necessarily mean the endpoint is unreachable.
-- This test does not validate authentication or authorize the design for private user data.
-- No custom domain or DNS configuration is required for this test.
+- This is a session-mechanics test, **not real authentication**. The server assigns a fixed demo identity; it does not verify a password, email, Google identity, admin approval, or real user.
+- No cookies, credentials, Sheets, Drive, social accounts, or production data are used.
+- The session token is held only in JavaScript memory; refreshing the page discards it.
+- Apps Script Script Properties store session state and token hash, not the raw token. The test uses UUID-derived tokens for mechanics only; production-grade token generation, login identity verification, abuse controls, quotas, cleanup, and concurrent-session behavior require separate review.
+- The test-only expiry action must never be copied into a production backend.
+- This POC does not prove production readiness or full security.
+- Existing published `JTCodes` branch and the portfolio site are not modified by this microtask.
