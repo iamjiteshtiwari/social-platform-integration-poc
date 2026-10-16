@@ -19,6 +19,7 @@
 
   // Deliberately memory-only: refresh clears this demo token.
   let sessionToken = "";
+  let sessionRevokedForTest = false;
 
   function validEndpoint(value) {
     try {
@@ -52,16 +53,16 @@
   function setBusy(busy) {
     [pingButton, postButton, saveButton, clearButton, createSessionButton,
       validateSessionButton, expireSessionButton, revokeSessionButton].forEach(button => {
-      if (button) button.disabled = busy || (button === validateSessionButton ||
-        button === expireSessionButton || button === revokeSessionButton) && !sessionToken;
+      if (button) button.disabled = busy;
     });
+    syncSessionButtons(busy);
   }
 
   function syncSessionButtons(busy = false) {
     createSessionButton.disabled = busy;
     validateSessionButton.disabled = busy || !sessionToken;
-    expireSessionButton.disabled = busy || !sessionToken;
-    revokeSessionButton.disabled = busy || !sessionToken;
+    expireSessionButton.disabled = busy || !sessionToken || sessionRevokedForTest;
+    revokeSessionButton.disabled = busy || !sessionToken || sessionRevokedForTest;
   }
 
   function saveEndpoint() {
@@ -116,6 +117,7 @@
     const { data } = await postAction("session_create");
     if (!data.success || !data.token) throw new Error(formatBody(data));
     sessionToken = data.token;
+    sessionRevokedForTest = false;
     syncSessionButtons();
     sessionStatus.textContent = "Demo session created. Expires at " + data.expiresAt +
       ". Token stays in this page's memory and is not displayed.";
@@ -129,7 +131,9 @@
     const { data } = await postAction("session_validate", { token: sessionToken });
     if (data.valid === false) {
       sessionStatus.textContent = "Backend rejected this session: " + (data.reason || data.error || "invalid");
-      if (["expired", "not_found_or_revoked", "revoked", "replaced_by_new_session"].includes(data.reason)) sessionToken = "";
+      // Clear only after the same token has actually been checked by the backend.
+      sessionToken = "";
+      sessionRevokedForTest = false;
       syncSessionButtons();
     } else {
       sessionStatus.textContent = "Backend says session is valid until " + data.expiresAt + ".";
@@ -146,9 +150,12 @@
 
   async function revokeSession() {
     const { data } = await postAction("session_revoke", { token: sessionToken });
-    sessionToken = "";
+    // Keep the token in memory for one final validation; disable repeat revoke/expiry actions.
+    sessionRevokedForTest = Boolean(data.revoked);
     syncSessionButtons();
-    sessionStatus.textContent = data.revoked ? "Session revoked by backend." : "Backend did not find an active session.";
+    sessionStatus.textContent = data.revoked
+      ? "Session revoked by backend. Press Validate session to verify rejection of the same token."
+      : "Backend did not find an active session. The token remains available for validation.";
     setResult(data.revoked ? "success" : "error", "Revoke result received.", data);
   }
 
@@ -177,6 +184,7 @@
     endpointInput.value = "";
     configStatus.textContent = "Saved endpoint cleared from this browser.";
     sessionToken = "";
+    sessionRevokedForTest = false;
     syncSessionButtons();
     sessionStatus.textContent = "Endpoint cleared; in-memory session token discarded.";
   });
